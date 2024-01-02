@@ -13,14 +13,14 @@ defmodule Hexplorer.UI do
     ExNcurses.keypad()
     ExNcurses.refresh()
     ExNcurses.init_pair(1, :blue, :black)
-    new = Sys.get_directory_name(state)
-    new
+    state
   end
 
   def setTitle(state) do
     new = Sys.get_directory_name(state)
     ExNcurses.attron(1)
-    ExNcurses.mvprintw(0, 1, new.current_path)
+    # ExNcurses.mvprintw(0, 1, new.current_path)
+    ExNcurses.mvprintw(0, 1, Integer.to_string(ExNcurses.lines()))
     ExNcurses.attroff(1)
     ExNcurses.refresh()
     new
@@ -43,11 +43,27 @@ defmodule Hexplorer.UI do
   end
 
   defp handle_key(state, ?h), do: Sys.go_back(state)
-  defp handle_key(state, ?k), do: %{state | idx: state.idx - 1}
-  defp handle_key(state, ?j), do: %{state | idx: state.idx + 1}
+  defp handle_key(state, ?k), do: move_up(state)
+  defp handle_key(state, ?j), do: move_down(state)
   defp handle_key(state, ?l), do: Sys.jump(state)
   defp handle_key(state, ?q), do: fin(state)
   defp handle_key(state, _), do: state
+
+  defp move_up(state) do
+    if state.idx > 0 do
+      %{state | idx: state.idx - 1}
+    else
+      state
+    end
+  end
+
+  defp move_down(state) do
+    if state.idx < length(state.dirs) - 1 do
+      %{state | idx: state.idx + 1}
+    else
+      state
+    end
+  end
 
   def first_tick(state) do
     Process.send_after(self(), :tick, 1)
@@ -65,12 +81,19 @@ defmodule Hexplorer.UI do
     Enum.each(state.dirs, fn filename ->
       index = Enum.find_index(state.dirs, &(&1 == filename))
 
+      type_indicator =
+        if File.dir?(Path.join([state.current_path, filename])) do
+          "[folder] "
+        else
+          "[file] "
+        end
+
       if index == state.idx do
         ExNcurses.attron(1)
-        ExNcurses.mvprintw(index + 1, 2, filename)
+        ExNcurses.mvprintw(index + 1, 2, "#{type_indicator}#{filename}")
         ExNcurses.attroff(1)
       else
-        ExNcurses.mvprintw(index + 1, 2, filename)
+        ExNcurses.mvprintw(index + 1, 2, "#{type_indicator}#{filename}")
       end
     end)
 

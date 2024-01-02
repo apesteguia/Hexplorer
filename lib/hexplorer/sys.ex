@@ -11,18 +11,26 @@ defmodule Hexplorer.Sys do
       {:ok, name} -> %{state | current_path: name}
       _ -> %{state | current_path: "NO DATA"}
     end
-
-    state
   end
 
   def jump(state) do
     current = Enum.at(state.dirs, state.idx)
     jumped = state.current_path <> "/" <> current
 
-    File.cd!(jumped)
-    new = getFiles(state)
+    case File.cd(jumped) do
+      :ok ->
+        new = getFiles(state)
+        %{new | current_path: jumped, idx: 0}
 
-    %{new | current_path: jumped, idx: 0}
+      {:error, reason} ->
+        case reason do
+          {:enoent, _} ->
+            state
+
+          _ ->
+            state
+        end
+    end
   end
 
   def go_back(state) do
