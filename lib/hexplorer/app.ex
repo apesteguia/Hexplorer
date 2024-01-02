@@ -6,8 +6,8 @@ defmodule Hexplorer.App do
       |> Hexplorer.Sys.getFiles()
 
     state
-    |> Hexplorer.UI.setTitle()
     |> Hexplorer.UI.first_tick()
+    |> Hexplorer.UI.setTitle()
     |> Hexplorer.UI.loop()
     |> Hexplorer.UI.fin()
   end

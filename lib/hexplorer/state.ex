@@ -1,9 +1,8 @@
 defmodule Hexplorer.State do
   defstruct width: 50,
             height: 40,
-            win: nil,
             dirs: [],
-            current_path: "",
+            current_path: "bobi",
             idx: 0,
             fin: false
 end

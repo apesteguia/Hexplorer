@@ -15,16 +15,25 @@ defmodule Hexplorer.Sys do
     state
   end
 
-  def remove(list) do
-    List.delete_at(list, length(list) - 1)
+  def jump(state) do
+    current = Enum.at(state.dirs, state.idx)
+    jumped = state.current_path <> "/" <> current
+
+    File.cd!(jumped)
+    new = getFiles(state)
+
+    %{new | current_path: jumped, idx: 0}
   end
 
   def go_back(state) do
     current_path =
       case File.cwd() do
         {:ok, path} ->
-          path |> String.split("/") |> remove() |> Enum.join("/") |> File.cd!()
-          path
+          parent = Path.dirname(path)
+
+          File.cd!(parent)
+
+          parent
 
         _ ->
           state.current_path
@@ -32,6 +41,6 @@ defmodule Hexplorer.Sys do
 
     dirs = getFiles(state)
 
-    %{dirs | current_path: current_path}
+    %{dirs | current_path: current_path, idx: 0}
   end
 end
