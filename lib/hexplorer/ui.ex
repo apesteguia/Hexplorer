@@ -12,7 +12,7 @@ defmodule Hexplorer.UI do
     ExNcurses.listen()
     ExNcurses.keypad()
     ExNcurses.refresh()
-    ExNcurses.init_pair(1, :blue, :black)
+    ExNcurses.init_pair(1, :black, :white)
     state
   end
 
@@ -24,11 +24,6 @@ defmodule Hexplorer.UI do
     ExNcurses.attroff(1)
     ExNcurses.refresh()
     new
-  end
-
-  def loop(state) when state.fin == true do
-    System.halt(0)
-    state
   end
 
   def loop(state) do
@@ -94,8 +89,13 @@ defmodule Hexplorer.UI do
     ExNcurses.clear()
 
     lines = ExNcurses.lines()
-    start_idx = state.idx
-    end_idx = min(length(state.dirs) - 1, start_idx + lines - 1)
+    dirs_count = length(state.dirs)
+
+    start_idx =
+      if dirs_count > lines, do: max(0, state.idx - div(lines, 2)), else: 0
+
+    end_idx =
+      if dirs_count > lines, do: min(dirs_count - 1, start_idx + lines - 1), else: dirs_count - 1
 
     Enum.each(start_idx..end_idx, fn index ->
       filename = Enum.at(state.dirs, index)
@@ -109,10 +109,10 @@ defmodule Hexplorer.UI do
 
       if index == state.idx do
         ExNcurses.attron(1)
-        ExNcurses.mvprintw(index - state.idx + 1, 2, "#{type_indicator}#{filename}")
+        ExNcurses.mvprintw(index - start_idx + 1, 2, "#{type_indicator}#{filename}")
         ExNcurses.attroff(1)
       else
-        ExNcurses.mvprintw(index - state.idx + 1, 2, "#{type_indicator}#{filename}")
+        ExNcurses.mvprintw(index - start_idx + 1, 2, "#{type_indicator}#{filename}")
       end
     end)
 
@@ -121,10 +121,21 @@ defmodule Hexplorer.UI do
     state
   end
 
+  defp flush_ticks() do
+    receive do
+      :tick -> flush_ticks()
+    after
+      100 ->
+        :ok
+    end
+  end
+
   def fin(state) do
+    flush_ticks()
     ExNcurses.stop_listening()
+    :init.stop()
     ExNcurses.endwin()
-    System.halt(0)
-    %{state | fin: true}
+
+    state
   end
 end

@@ -10,6 +10,5 @@ defmodule Hexplorer.App do
     |> Hexplorer.UI.setTitle()
     |> Hexplorer.UI.draw()
     |> Hexplorer.UI.loop()
-    |> Hexplorer.UI.fin()
   end
 end
