@@ -8,6 +8,7 @@ defmodule Hexplorer.App do
     state
     |> Hexplorer.UI.first_tick()
     |> Hexplorer.UI.setTitle()
+    |> Hexplorer.UI.draw()
     |> Hexplorer.UI.loop()
     |> Hexplorer.UI.fin()
   end
