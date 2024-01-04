@@ -102,9 +102,9 @@ defmodule Hexplorer.UI do
 
       type_indicator =
         if File.dir?(Path.join([state.current_path, filename])) do
-          "[folder] "
+          "[folder]  "
         else
-          "[file] "
+          "[file]    "
         end
 
       if index == state.idx do
@@ -131,6 +131,7 @@ defmodule Hexplorer.UI do
   end
 
   def fin(state) do
+    System.cmd("cd", ["/"])
     flush_ticks()
     ExNcurses.stop_listening()
     :init.stop()
